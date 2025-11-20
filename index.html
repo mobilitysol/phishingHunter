@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard: Entrenamiento de Ciberseguridad</title>
+    <style>
+        :root {
+            /* Paleta personalizada Verde y Azul */
+            --bg-color: #0f172a; /* Azul oscuro profundo (Slate 900) */
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #94a3b8;
+            
+            /* Azul Corporativo (Primary) */
+            --primary: #2563eb; /* Azul vibrante */
+            --primary-dark: #022390;
+            
+            /* Griz Corporativo (Accent/Success) */
+            --accent-green: #585858; /* Emerald 600 */
+            --accent-green-bright: #919191; /* Emerald 400 */
+            
+            --accent-red: #ef4444;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); /* Gradiente azul sutil */
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            max-height: 900px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(30, 41, 59, 0.95); /* Azul grisáceo semitransparente */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active { transform: scale(0.98); }
+        
+        /* Botones con nuevos colores */
+        .btn-primary { 
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white; 
+        }
+        .btn-success { 
+            background-color: var(--accent-green); 
+            color: white; 
+        }
+        .btn-danger { 
+            background-color: var(--accent-red); 
+            color: white; 
+        }
+
+        /* --- Screens --- */
+        .screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* --- Start Screen --- */
+        h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px; 
+            color: var(--accent-green-bright); /* Título en verde brillante */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle { color: var(--text-light); margin-bottom: 40px; line-height: 1.5; }
+        
+        /* Logo Styles */
+        .logo-img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        /* Fallback por si la imagen no carga */
+        .logo-placeholder { font-size: 4rem; margin-bottom: 20px; }
+
+        /* --- Game HUD --- */
+        #hud {
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6); /* Fondo HUD más oscuro */
+            border-bottom: 1px solid #334155;
+        }
+        .lives { font-size: 1.5rem; color: var(--accent-red); }
+        .score-display { font-size: 1.2rem; font-weight: bold; color: var(--accent-green-bright); }
+        
+        /* Timer Bar */
+        #timer-container {
+            width: 100%;
+            height: 8px;
+            background: #1e293b;
+        }
+        #timer-bar {
+            height: 100%;
+            background: var(--primary); /* Barra azul */
+            width: 100%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* --- Card Display --- */
+        #card-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            perspective: 1000px;
+        }
+
+        .scenario-card {
+            background: var(--card-bg);
+            color: var(--text-main);
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            position: relative;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Email Style */
+        .card-header {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-bottom: 1px solid #cbd5e1;
+            border-left: 4px solid var(--primary); /* Detalle azul en email */
+        }
+        .card-meta { font-size: 0.85rem; color: #64748b; margin-bottom: 4px; }
+        .card-sender { font-weight: bold; color: #0f172a; }
+        .fake-link { color: #2563eb; text-decoration: underline; cursor: pointer; pointer-events: none; }
+
+        /* SMS Style Modifier */
+        .sms-style .card-header { background-color: #e5e7eb; display: flex; align-items: center; gap: 10px;}
+        .sms-style .card-sender { font-size: 1.1rem; }
+        .sms-style .card-body { 
+            background-color: #e2e8f0; 
+            margin: 20px; 
+            padding: 15px; 
+            border-radius: 18px; 
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            width: fit-content;
+            max-width: 90%;
+            color: #334155;
+        }
+
+        /* --- Controls --- */
+        #controls {
+            width: 100%;
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid #334155;
+        }
+
+        /* --- Feedback Overlay --- */
+        #feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        .feedback-icon { font-size: 5rem; margin-bottom: 20px; display: block; }
+        .feedback-title { font-size: 2rem; font-weight: bold; margin-bottom: 15px; }
+        .feedback-text { font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
+        .correct { color: var(--accent-green-bright); }
+        .wrong { color: var(--accent-red); }
+
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        .shake-anim { animation: shake 0.4s ease-in-out; }
+
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="screen">
+            <!-- Logo con fallback a emoji si la imagen falla -->
+            <img src="./logo_clip.png" alt="Clip Connections" class="logo-img" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;fallback-icon&#39;).style.display=&#39;block&#39;">
+            <div id="fallback-icon" class="logo-placeholder" style="display:none">🛡️</div>
+            
+            <h1>PhishGuard</h1>
+            <p class="subtitle">Entrenamiento Clip Connections Ltda.<br>¿Puedes identificar a los impostores?</p>
+            <button class="btn btn-primary" onclick="game.start()">Comenzar Entrenamiento</button>
+        </div>
+
+        <!-- Pantalla de Juego -->
+        <div id="game-screen" class="screen hidden" style="justify-content: space-between; padding: 0;">
+            <div id="hud">
+                <div class="lives" id="lives-display">❤️❤️❤️</div>
+                <div class="score-display">Puntos: <span id="score">0</span></div>
+            </div>
+            <div id="timer-container"><div id="timer-bar"></div></div>
+
+            <div id="card-container">
+                <!-- Las tarjetas se inyectan aquí vía JS -->
+            </div>
+
+            <div id="controls">
+                <button class="btn btn-success" onclick="game.handleAnswer(false)">Legítimo</button>
+                <button class="btn btn-danger" onclick="game.handleAnswer(true)">Phishing</button>
+            </div>
+        </div>
+
+        <!-- Overlay de Feedback -->
+        <div id="feedback-overlay" class="hidden">
+            <div id="feedback-content">
+                <!-- Contenido dinámico -->
+            </div>
+            <button class="btn btn-primary" id="next-btn" onclick="game.nextScenario()">Siguiente</button>
+        </div>
+
+        <!-- Pantalla Final -->
+        <div id="end-screen" class="screen hidden">
+            <div style="font-size: 4rem; margin-bottom: 20px;">🏁</div>
+            <h2>Entrenamiento Completado</h2>
+            <p class="subtitle">Tu Puntuación Final:</p>
+            <h1 id="final-score" style="color: var(--accent-green); margin-top: 0;">0</h1>
+            <p id="final-message" style="margin-bottom: 30px;">Mensaje de resultado</p>
+            <button class="btn btn-primary" onclick="game.restart()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DE ESCENARIOS ---
+        const scenariosData = [
+            {
+                id: 1,
+                type: 'email',
+                content: {
+                    sender: 'Soporte IT <admin@gogle-security.com>',
+                    subject: 'ALERTA: Actividad inusual en su cuenta',
+                    body: 'Detectamos un inicio de sesión en Rusia. Si no fue usted, haga clic aquí inmediatamente para bloquear su cuenta: <span class="fake-link">verificar-cuenta.com</span>. Tiene 10 minutos.'
+                },
+                isPhishing: true,
+                explanation: "¡Cuidado! Mira el remitente 'gogle-security.com' (falta una 'o'). Además, crean una falsa sensación de urgencia para que actúes sin pensar."
+            },
+            {
+                id: 2,
+                type: 'email',
+                content: {
+                    sender: 'Recursos Humanos <rrhh@miempresa.com>',
+                    subject: 'Recordatorio: Encuesta de clima laboral',
+                    body: 'Hola equipo,\n\nLes recordamos que la encuesta anual cierra este viernes. Es anónima y nos ayuda a mejorar.\n\nSaludos,\nEquipo de RRHH.'
+                },
+                isPhishing: false,
+                explanation: "Este correo es legítimo. Viene del dominio oficial de la empresa, no pide contraseñas, no tiene enlaces extraños y el tono es informativo."
+            },
+            {
+                id: 3,
+                type: 'sms',
+                content: {
+                    sender: 'CorreoExpress',
+                    subject: '',
+                    body: 'Su paquete ES-291 está retenido en aduanas. Pague las tasas (2.99€) aquí para liberar la entrega: http://bit.ly/pagos-aduanas'
+                },
+                isPhishing: true,
+                explanation: "SMS fraudulento (Smishing). Los servicios de paquetería oficiales no usan enlaces bit.ly genéricos ni piden pagos urgentes por SMS de esta forma."
+            },
+            {
+                id: 4,
+                type: 'email',
+                content: {
+                    sender: 'CEO <director@miempresa.com>',
+                    subject: 'Tarea confidencial rápida',
+                    body: 'Hola, estoy en una reunión y no puedo hablar. Necesito que compres 5 tarjetas de regalo de Amazon para unos clientes ahora mismo. Te reembolso luego. ¿Puedes hacerlo ya?'
+                },
+                isPhishing: true,
+                explanation: "Fraude del CEO. Aunque el correo parezca real (spoofing), la solicitud de dinero o tarjetas de regalo con urgencia 'secreta' es una señal clásica de estafa."
+            },
+            {
+                id: 5,
+                type: 'email',
+                content: {
+                    sender: 'Microsoft Teams <noreply@email.teams.microsoft.com>',
+                    subject: 'Te han añadido a un equipo en Teams',
+                    body: 'Juan Pérez te ha añadido al equipo "Proyecto Alpha".\n\nAbre Teams para ver el contenido.'
+                },
+                isPhishing: false,
+                explanation: "Legítimo. El remitente es el dominio oficial de Microsoft y es una notificación estándar de la herramienta que usamos."
+            }
+        ];
+
+        // --- LÓGICA DEL JUEGO ---
+        class Game {
+            constructor() {
+                this.scenarios = [];
+                this.currentIndex = 0;
+                this.score = 0;
+                this.lives = 3;
+                this.timer = null;
+                this.timeLeft = 15; // Segundos por pregunta
+                this.maxTime = 15;
+                this.gameActive = false;
+            }
+
+            init() {
+                // Mezclar escenarios al inicio
+                this.scenarios = [...scenariosData].sort(() => Math.random() - 0.5);
+            }
+
+            start() {
+                this.init();
+                this.currentIndex = 0;
+                this.score = 0;
+                this.lives = 3;
+                this.updateHUD();
+                
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('end-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                
+                this.loadScenario();
+            }
+
+            restart() {
+                this.start();
+            }
+
+            loadScenario() {
+                if (this.currentIndex >= this.scenarios.length) {
+                    this.endGame();
+                    return;
+                }
+
+                const scenario = this.scenarios[this.currentIndex];
+                const container = document.getElementById('card-container');
+                
+                // Renderizar tarjeta según tipo
+                let html = '';
+                if (scenario.type === 'email') {
+                    html = `
+                        <div class="scenario-card">
+                            <div class="card-header">
+                                <div class="card-meta">De: <span class="card-sender">${scenario.content.sender}</span></div>
+                                <div class="card-subject">${scenario.content.subject}</div>
+                            </div>
+                            <div class="card-body">${scenario.content.body}</div>
+                        </div>
+                    `;
+                } else {
+                    html = `
+                        <div class="scenario-card sms-style">
+                            <div class="card-header">
+                                <div class="card-sender">📱 ${scenario.content.sender}</div>
+                            </div>
+                            <div class="card-body">${scenario.content.body}</div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+                container.classList.remove('shake-anim'); // Reset animación
+                
+                this.startTimer();
+            }
+
+            startTimer() {
+                this.timeLeft = this.maxTime;
+                this.gameActive = true;
+                const timerBar = document.getElementById('timer-bar');
+                timerBar.style.width = '100%';
+                timerBar.style.backgroundColor = '#3b82f6'; // Azul
+
+                if (this.timer) clearInterval(this.timer);
+
+                this.timer = setInterval(() => {
+                    this.timeLeft -= 0.1;
+                    const percentage = (this.timeLeft / this.maxTime) * 100;
+                    timerBar.style.width = `${percentage}%`;
+
+                    if (this.timeLeft <= 3) {
+                        timerBar.style.backgroundColor = '#ef4444'; // Rojo alerta
+                    }
+
+                    if (this.timeLeft <= 0) {
+                        this.handleTimeOut();
+                    }
+                }, 100);
+            }
+
+            handleTimeOut() {
+                clearInterval(this.timer);
+                this.gameActive = false;
+                this.lives--;
+                this.updateHUD();
+                this.showFeedback(false, true); // Time out es un fallo
+            }
+
+            handleAnswer(userSaysPhishing) {
+                if (!this.gameActive) return;
+                clearInterval(this.timer);
+                this.gameActive = false;
+
+                const currentScenario = this.scenarios[this.currentIndex];
+                const isCorrect = userSaysPhishing === currentScenario.isPhishing;
+
+                if (isCorrect) {
+                    // Calcular puntaje: Base 100 + Bonus por tiempo
+                    const timeBonus = Math.floor(this.timeLeft * 10);
+                    this.score += (100 + timeBonus);
+                    this.updateHUD();
+                    this.showFeedback(true, false);
+                } else {
+                    this.lives--;
+                    this.updateHUD();
+                    // Animación de error
+                    document.querySelector('.scenario-card').classList.add('shake-anim');
+                    // Esperar un poco para mostrar el feedback
+                    setTimeout(() => this.showFeedback(false, false), 500);
+                }
+            }
+
+            updateHUD() {
+                document.getElementById('score').innerText = this.score;
+                let hearts = '';
+                for(let i=0; i<3; i++) {
+                    hearts += i < this.lives ? '❤️' : '🖤';
+                }
+                document.getElementById('lives-display').innerText = hearts;
+            }
+
+            showFeedback(isCorrect, isTimeout) {
+                const overlay = document.getElementById('feedback-overlay');
+                const content = document.getElementById('feedback-content');
+                const currentScenario = this.scenarios[this.currentIndex];
+
+                let title = isCorrect ? "¡Excelente!" : "¡Cuidado!";
+                let titleClass = isCorrect ? "correct" : "wrong";
+                let icon = isCorrect ? "✅" : "⚠️";
+                let explanation = currentScenario.explanation;
+
+                if (isTimeout) {
+                    title = "¡Tiempo Agotado!";
+                    explanation = "En la vida real, los atacantes usan la urgencia para que no pienses. Tómate un segundo, pero no te duermas. " + explanation;
+                } else if (!isCorrect) {
+                    explanation = "Te engañaron. " + explanation;
+                }
+
+                content.innerHTML = `
+                    <span class="feedback-icon">${icon}</span>
+                    <div class="feedback-title ${titleClass}">${title}</div>
+                    <p class="feedback-text">${explanation}</p>
+                `;
+
+                overlay.classList.remove('hidden');
+                
+                // Si no quedan vidas, el botón siguiente lleva al final
+                const nextBtn = document.getElementById('next-btn');
+                if (this.lives <= 0) {
+                    nextBtn.onclick = () => game.endGame();
+                    nextBtn.innerText = "Ver Resultado";
+                } else {
+                    nextBtn.onclick = () => game.nextScenario();
+                    nextBtn.innerText = "Siguiente Caso";
+                }
+            }
+
+            nextScenario() {
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                this.currentIndex++;
+                this.loadScenario();
+            }
+
+            endGame() {
+                document.getElementById('feedback-overlay').classList.add('hidden');
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('end-screen').classList.remove('hidden');
+                
+                const finalScoreEl = document.getElementById('final-score');
+                const finalMsgEl = document.getElementById('final-message');
+                
+                finalScoreEl.innerText = this.score;
+                
+                if (this.lives === 0) {
+                    finalMsgEl.innerText = "Los ciberdelincuentes te atraparon esta vez. ¡Inténtalo de nuevo para mejorar tu ojo crítico!";
+                } else if (this.score > 1000) {
+                    finalMsgEl.innerText = "¡Impresionante! Eres un firewall humano. Nadie te engaña fácilmente.";
+                } else {
+                    finalMsgEl.innerText = "Buen trabajo, pero mantente alerta. Algunos detalles se te escaparon.";
+                }
+            }
+        }
+
+        // Instanciar juego
+        const game = new Game();
+
+    </script>
+
+</body></html>
